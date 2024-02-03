@@ -2,9 +2,10 @@
 from sys import argv
 from pathlib import Path
 import subprocess
+import typing
 
 
-def main(args):
+def main(args: List[str]) -> None:
     if len(args) == 1:
         pwd = Path.cwd()
         selector(pwd)
@@ -25,19 +26,19 @@ def main(args):
         exit(0)
 
 
-def selector(target):
-    selection = input(f'Would you like to convert all files in {target}? y/N ')
+def selector(target: Path) -> None:
+    selection: str = input(f'Would you like to convert all files in {target}? y/N ')
     if selection == "y":
-        dest = make_destination_dir(target)
-        files = [f for f in Path().iterdir() if f.is_file()]
+        dest: Path = make_destination_dir(target)
+        files: List[Path] = [f for f in target.iterdir() if f.is_file()]
         for f in files:
             converter(f, dest)
     else:
         exit(0)
 
 
-def make_destination_dir(directory):
-    destination = directory.joinpath('hevc')
+def make_destination_dir(directory: Path) -> Path:
+    destination: Path = directory.joinpath('hevc')
     if not destination.exists():
         try:
             destination.mkdir()
@@ -49,11 +50,11 @@ def make_destination_dir(directory):
     return destination
 
 
-def converter(file, dest):
+def converter(file: Path, dest: Path) -> None:
     if file.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
-        input_file = file.name
-        new_name = f'{file.stem}.mp4'
-        output_file = dest.joinpath(new_name)
+        input_file: str = file.name
+        new_name: str = f'{file.stem}.mp4'
+        output_file: Path = dest.joinpath(new_name)
 
         print(f'Starting {input_file} ')
         print('')
