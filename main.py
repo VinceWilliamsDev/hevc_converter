@@ -7,28 +7,28 @@ import typing
 
 def main(args: List[str]) -> None:
     if len(args) == 1:
-        pwd = Path.cwd()
+        pwd: Path = Path.cwd()
         selector(pwd)
     elif len(args) == 2:
-        arg = Path(args[1])
+        arg: Path = Path(args[1])
         if not arg.exists():
             raise Exception("File or directory not found")
         if arg.is_file():
-            dest = make_destination_dir(arg.parent)
+            dest: Path = make_destination_dir(arg.parent)
             converter(arg, dest)
         elif arg.is_dir():
             selector(arg)
         else:
             exit(0)
     elif len(args) > 2:
-        raise Exception('Please input only one "1" file or directory')
+        raise Exception('Please input only one(1) file or directory')
     else:
         exit(0)
 
 
 def selector(target: Path) -> None:
     selection: str = input(f'Would you like to convert all files in {target}? y/N ')
-    if selection == "y":
+    if selection.lower() == ("y" or "yes"):
         dest: Path = make_destination_dir(target)
         files: List[Path] = [f for f in target.iterdir() if f.is_file()]
         for f in files:
@@ -63,7 +63,7 @@ def converter(file: Path, dest: Path) -> None:
         # print(f'output_file: {output_file}')
 
         try:
-            result = subprocess.run(
+            result: subprocess.CompletedProcess = subprocess.run(
                 ['ffmpeg', '-i', input_file, '-metadata', 'title=""', '-c:v', 'hevc', '-c:a', 'copy', output_file],
                 stdout=subprocess.PIPE, check=True)
             print(result.stdout.decode())
