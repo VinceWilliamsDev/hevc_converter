@@ -44,7 +44,6 @@ def make_destination_dir(directory: Path) -> Path:
             destination.mkdir()
         except FileNotFoundError:
             print('Unable to create destination directory')
-            exit(1)
         except FileExistsError:
             return destination
     return destination
