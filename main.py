@@ -2,7 +2,6 @@
 from sys import argv
 from pathlib import Path
 import subprocess
-import typing
 
 
 def main(args: list[str]) -> None:
