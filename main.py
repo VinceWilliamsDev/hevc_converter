@@ -5,39 +5,38 @@ import subprocess
 
 
 def main(args: list[str]) -> None:
-    if len(args) == 1:
+    if len(args) == 0:
         pwd: Path = Path.cwd()
-        selector(pwd)
-
-        print('\nFile conversions are complete')
-
-    elif len(args) == 2:
-        arg: Path = Path(args[1])
+        files, dest = selector(pwd)
+        for file in files:
+            converter(file, dest)
+        print('File conversions are complete\n')
+    elif len(args) == 1:
+        arg: Path = Path(args[0])
         if not arg.exists():
             raise Exception("File or directory not found")
         if arg.is_file():
             dest: Path = make_destination_dir(arg.parent)
             converter(arg, dest)
         elif arg.is_dir():
-            selector(arg)
+            files, dest = selector(arg)
+            for file in files:
+                converter(file, dest)
+            print('File conversions are complete\n')
         else:
             exit(0)
-
-        print('\nFile conversions are complete')
-
-    elif len(args) > 2:
+    elif len(args) > 1:
         raise Exception('Please input only one(1) file or directory')
     else:
         exit(0)
 
 
-def selector(target: Path) -> None:
+def selector(target: Path) -> list[Path]:
     selection: str = input(f'Would you like to convert all files in {target}? y/N ')
     if selection.lower() == ("y" or "yes"):
         dest: Path = make_destination_dir(target)
         files: list[Path] = [f for f in target.iterdir() if f.is_file()]
-        for f in files:
-            converter(f, dest)
+        return [files, dest]
     else:
         exit(0)
 
@@ -49,6 +48,7 @@ def make_destination_dir(directory: Path) -> Path:
             destination.mkdir()
         except FileNotFoundError:
             print('Unable to create destination directory')
+            exit(1)
         except FileExistsError:
             return destination
     return destination
@@ -81,4 +81,4 @@ def converter(file: Path, dest: Path) -> None:
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    main(argv)
+    main(argv[1:])
