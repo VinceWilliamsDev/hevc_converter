@@ -10,8 +10,7 @@ def main(args: list[str]) -> None:
         pwd: Path = Path.cwd()
         selector(pwd)
 
-        print('')
-        print('File conversions are complete')
+        print('\nFile conversions are complete')
 
     elif len(args) == 2:
         arg: Path = Path(args[1])
@@ -25,8 +24,7 @@ def main(args: list[str]) -> None:
         else:
             exit(0)
 
-        print('')
-        print('File conversions are complete')
+        print('\nFile conversions are complete')
 
     elif len(args) > 2:
         raise Exception('Please input only one(1) file or directory')
@@ -63,9 +61,8 @@ def converter(file: Path, dest: Path) -> None:
         new_name: str = f'{file.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
 
-        print('')
-        print(f'Starting {input_file} ')
-        print('')
+        print(f'\nSTARTING {input_file}\n')
+
         # print(f'input_file: {input_file}')
         # print(f'new name: {new_name}')
         # print(f'output_file: {output_file}')
@@ -78,11 +75,9 @@ def converter(file: Path, dest: Path) -> None:
         except subprocess.CalledProcessError as e:
             print(f'Command {e.cmd} failed with error {e.returncode}')
 
-        print('')
-        print(f'Finished {input_file}')
-        print('')
+        print(f'\nFINISHED {input_file}\n')
     else:
-        print(f'{file.name} cannot be converted')
+        print(f'\n{file.name} cannot be converted\n')
 
 
 # Press the green button in the gutter to run the script.
