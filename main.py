@@ -9,6 +9,10 @@ def main(args: list[str]) -> None:
     if len(args) == 1:
         pwd: Path = Path.cwd()
         selector(pwd)
+
+        print('')
+        print('File conversions are complete')
+
     elif len(args) == 2:
         arg: Path = Path(args[1])
         if not arg.exists():
@@ -20,6 +24,10 @@ def main(args: list[str]) -> None:
             selector(arg)
         else:
             exit(0)
+
+        print('')
+        print('File conversions are complete')
+
     elif len(args) > 2:
         raise Exception('Please input only one(1) file or directory')
     else:
