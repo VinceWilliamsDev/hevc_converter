@@ -5,7 +5,7 @@ import subprocess
 import typing
 
 
-def main(args: List[str]) -> None:
+def main(args: list[str]) -> None:
     if len(args) == 1:
         pwd: Path = Path.cwd()
         selector(pwd)
@@ -30,7 +30,7 @@ def selector(target: Path) -> None:
     selection: str = input(f'Would you like to convert all files in {target}? y/N ')
     if selection.lower() == ("y" or "yes"):
         dest: Path = make_destination_dir(target)
-        files: List[Path] = [f for f in target.iterdir() if f.is_file()]
+        files: list[Path] = [f for f in target.iterdir() if f.is_file()]
         for f in files:
             converter(f, dest)
     else:
@@ -55,6 +55,7 @@ def converter(file: Path, dest: Path) -> None:
         new_name: str = f'{file.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
 
+        print('')
         print(f'Starting {input_file} ')
         print('')
         # print(f'input_file: {input_file}')
