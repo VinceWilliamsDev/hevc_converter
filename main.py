@@ -68,7 +68,7 @@ def converter(file: Path, dest: Path) -> None:
 
         try:
             result: subprocess.CompletedProcess = subprocess.run(
-                ['ffmpeg', '-i', input_file, '-metadata', 'title=""', '-c:v', 'hevc', '-c:a', 'copy', output_file],
+                ['ffmpeg', '-i', input_file, '-metadata', 'title=', '-c:v', 'hevc', '-c:a', 'copy', output_file],
                 stdout=subprocess.PIPE, check=True)
             print(result.stdout.decode())
         except subprocess.CalledProcessError as e:
