@@ -2,6 +2,7 @@
 from sys import argv
 from pathlib import Path
 import subprocess
+from datetime import date
 
 
 def main(args: list[str]) -> None:
@@ -73,7 +74,9 @@ def converter(file: Path, dest: Path) -> None:
             print(result.stdout.decode())
         except subprocess.CalledProcessError as e:
             print(f'Command {e.cmd} failed with error {e.returncode}')
-
+        with open('conversion.log', 'a') as log:
+            today = date.today()
+            log.write(f'{today} successfully converted {input_file}\n')
         print(f'\nFINISHED {input_file}\n')
     else:
         print(f'\n{file.name} cannot be converted\n')
