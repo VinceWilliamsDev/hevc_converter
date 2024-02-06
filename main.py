@@ -68,7 +68,7 @@ def converter(src: Path, dest: Path) -> None:
         # print(f'input_file: {input_file}')
         # print(f'new name: {new_name}')
         # print(f'output_file: {output_file}')
-
+        flag: bool = False
         try:
             result: subprocess.CompletedProcess = subprocess.run(
                 ['ffmpeg', '-i', input_file, '-metadata', 'title=', '-c:v', 'hevc', '-c:a', 'copy', output_file],
@@ -76,9 +76,11 @@ def converter(src: Path, dest: Path) -> None:
             print(result.stdout.decode())
         except subprocess.CalledProcessError as e:
             print(f'Command {e.cmd} failed with error {e.returncode}')
-        with open(log_file, 'a') as log:
-            today = date.today()
-            log.write(f'{today} successfully converted {input_file}\n')
+            flag = True
+        if not flag:
+            with open(log_file, 'a') as log:
+                today = date.today()
+                log.write(f'{today} successfully converted {input_file}\n')
         print(f'\nFINISHED {input_file}\n')
     else:
         print(f'\n{src.name} cannot be converted\n')
