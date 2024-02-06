@@ -3,7 +3,7 @@ import os
 from sys import argv
 from pathlib import Path
 import subprocess
-from datetime import date
+from datetime import date, time
 from typing import Tuple, List
 
 
@@ -83,7 +83,8 @@ def converter(src: Path, dest: Path) -> None:
         if not flag:
             with open(log_file, 'a') as log:
                 today = date.today()
-                log.write(f'{today} successfully converted {input_file}\n')
+                now = f'{time.hour}:{time.minute}'
+                log.write(f'{today} {now}: successfully converted ({input_file})\n')
         print(f'FINISHED {input_file}\n')
     else:
         print(f'\n{src.name} cannot be converted\n')
