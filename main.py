@@ -84,7 +84,7 @@ def converter(src: Path, dest: Path) -> None:
             with open(log_file, 'a') as log:
                 today = date.today()
                 log.write(f'{today} successfully converted {input_file}\n')
-        print(f'\nFINISHED {input_file}\n')
+        print(f'FINISHED {input_file}\n')
     else:
         print(f'\n{src.name} cannot be converted\n')
 
