@@ -55,11 +55,12 @@ def make_destination_dir(directory: Path) -> Path:
     return destination
 
 
-def converter(file: Path, dest: Path) -> None:
-    if file.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
-        input_file: str = file.name
-        new_name: str = f'{file.stem}.mp4'
+def converter(src: Path, dest: Path) -> None:
+    if src.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
+        input_file: str = src.name
+        new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
+        log_file: Path = src.parent.joinpath('conversion.log')
 
         print(f'\nSTARTING {input_file}\n')
 
@@ -74,12 +75,12 @@ def converter(file: Path, dest: Path) -> None:
             print(result.stdout.decode())
         except subprocess.CalledProcessError as e:
             print(f'Command {e.cmd} failed with error {e.returncode}')
-        with open('conversion.log', 'a') as log:
+        with open(log_file, 'a') as log:
             today = date.today()
             log.write(f'{today} successfully converted {input_file}\n')
         print(f'\nFINISHED {input_file}\n')
     else:
-        print(f'\n{file.name} cannot be converted\n')
+        print(f'\n{src.name} cannot be converted\n')
 
 
 # Press the green button in the gutter to run the script.
