@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 from time import localtime, strftime
 from typing import Tuple, List
+import json
+from shutil import move
 
 
 def main(args: list[str]) -> None:
@@ -65,34 +67,60 @@ def converter(src: Path, dest: Path) -> None:
         new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
         error: bool = False
-        now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
-        print(f'\n{now}: STARTING {input_file}\n')
+        start_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
+        print(f'\n{start_time}: STARTING {input_file}\n')
+
+        # check if the file is already encoded in HEVC. If so, simply move it to the destination folder
+        try:
+            ffprobe: subprocess.CompletedProcess = subprocess.run(
+                ['ffprobe', '-show_format', '-show_streams', '-loglevel', 'quiet', '-print_format', 'json', input_file],
+                stdout=subprocess.PIPE, check=True)
+            video_info = json.loads(ffprobe.stdout.decode())
+            for stream in range(5):
+                if video_info['streams'][stream]['codec_name'] == 'hevc':
+                    try:
+                        move(input_file, dest)
+                        end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+                        with open(log_file, 'a') as log:
+                            log.write(f'[{end_time}] successfully moved ({input_file})\n')
+                        print(f'{end_time}: FINISHED {input_file}\n')
+                        return
+                    except FileExistsError:
+                        end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+                        with open(log_file, 'a') as log:
+                            log.write(f'[{end_time}] FAILED TO MOVE ({src.name})\n')
+                        print(f'\n{end_time}: {src.name} cannot be moved\n')
+                        exit(1)
+        except subprocess.CalledProcessError as e:
+            end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+            print(f'{end_time}: Command {e.cmd} failed with error {e.returncode}\nOutput: {e.output}')
+
+        # if it isn't already HEVC, re-encode
         try:
             result: subprocess.CompletedProcess = subprocess.run(
                 ['ffmpeg', '-i', input_file, '-metadata', 'title=', '-c:v', 'hevc', '-c:a', 'copy', output_file],
                 stdout=subprocess.PIPE, check=True)
             print(result.stdout.decode())
         except subprocess.CalledProcessError as e:
-            now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
-            print(f'{now}: Command {e.cmd} failed with error {e.returncode}')
             error = True
+            end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+            print(f'{end_time}: Command {e.cmd} failed with error {e.returncode}')
             with open(log_file, 'a') as log:
-                log.write(f'[{now}] CONVERSION FAILED FOR ({input_file})\n')
+                log.write(f'[{end_time}] CONVERSION FAILED FOR ({input_file})\n')
             if output_file.exists():
                 remove(output_file)
         if not error:
-            now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+            end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
             with open(log_file, 'a') as log:
-                log.write(f'[{now}] successfully converted ({input_file})\n')
-        print(f'{now}: FINISHED {input_file}\n')
+                log.write(f'[{end_time}] successfully converted ({input_file})\n')
+            print(f'{end_time}: FINISHED {input_file}\n')
     else:
-        now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
         with open(log_file, 'a') as log:
-            log.write(f'[{now}] CANNOT CONVERT ({src.name})\n')
-        print(f'\n{now}: {src.name} cannot be converted\n')
+            log.write(f'[{end_time}] CANNOT CONVERT ({src.name})\n')
+        print(f'\n{end_time}: {src.name} cannot be converted\n')
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main(argv[1:])
