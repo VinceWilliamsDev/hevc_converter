@@ -59,7 +59,7 @@ def make_destination_dir(directory: Path) -> Path:
 
 
 def converter(src: Path, dest: Path) -> None:
-    log_file: Path = src.parent.joinpath('conversion.log')
+    log_file: Path = src.parent.joinpath('HEVC.log')
     if src.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
         input_file: str = src.name
         new_name: str = f'{src.stem}.mp4'
