@@ -70,8 +70,14 @@ def make_destination_dir(directory: Path) -> Path:
 
 
 def time_elapsed(start: str, end: str) -> str:
-    start_list: list[str] = start.split(' ')
-    end_list: list[str] = end.split(' ')
+    start_date_time: list[str] = start.split(' ')
+    start_list = start_date_time[0].split('-')
+    start_list.extend(start_date_time[1].split(':'))
+
+    end_date_time: list[str] = end.split(' ')
+    end_list = end_date_time[0].split('-')
+    end_list.extend(end_date_time[1].split(':'))
+
     delta: list[int] = []
     for idx, interval in enumerate(end_list):
         delta.append(int(interval) - int(start_list[idx]))
