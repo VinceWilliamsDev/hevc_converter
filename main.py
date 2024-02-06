@@ -1,4 +1,5 @@
 # convert video files to the H.265 codec
+import os
 from sys import argv
 from pathlib import Path
 import subprocess
@@ -77,6 +78,8 @@ def converter(src: Path, dest: Path) -> None:
         except subprocess.CalledProcessError as e:
             print(f'Command {e.cmd} failed with error {e.returncode}')
             flag = True
+            if output_file.exists():
+                os.remove(output_file)
         if not flag:
             with open(log_file, 'a') as log:
                 today = date.today()
