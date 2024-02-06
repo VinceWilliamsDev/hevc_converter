@@ -66,7 +66,6 @@ def converter(src: Path, dest: Path) -> None:
         input_file: str = src.name
         new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
-        error: bool = False
         start_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
         print(f'\n{start_time}: STARTING {input_file}\n')
@@ -102,19 +101,18 @@ def converter(src: Path, dest: Path) -> None:
                 ['ffmpeg', '-i', input_file, '-metadata', 'title=', '-c:v', 'hevc', '-c:a', 'copy', output_file],
                 stdout=subprocess.PIPE, check=True)
             print(result.stdout.decode())
+            end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+            with open(log_file, 'a') as log:
+                log.write(f'[{end_time}] successfully converted ({input_file})\n')
+            print(f'{end_time}: FINISHED {input_file}\n')
         except subprocess.CalledProcessError as e:
-            error = True
             end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
             print(f'{end_time}: Command {e.cmd} failed with error {e.returncode}')
             with open(log_file, 'a') as log:
                 log.write(f'[{end_time}] CONVERSION FAILED FOR ({input_file})\n')
             if output_file.exists():
                 remove(output_file)
-        if not error:
-            end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
-            with open(log_file, 'a') as log:
-                log.write(f'[{end_time}] successfully converted ({input_file})\n')
-            print(f'{end_time}: FINISHED {input_file}\n')
+
     else:
         end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
         with open(log_file, 'a') as log:
