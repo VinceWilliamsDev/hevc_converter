@@ -3,6 +3,7 @@ from sys import argv
 from pathlib import Path
 import subprocess
 from datetime import date
+from typing import Tuple, List
 
 
 def main(args: list[str]) -> None:
@@ -32,12 +33,12 @@ def main(args: list[str]) -> None:
         exit(0)
 
 
-def selector(target: Path) -> list[Path]:
+def selector(target: Path) -> tuple[list[Path], Path]:
     selection: str = input(f'Would you like to convert all files in {target}? y/N ')
     if selection.lower() == ("y" or "yes"):
         dest: Path = make_destination_dir(target)
         files: list[Path] = [f for f in target.iterdir() if f.is_file()]
-        return [files, dest]
+        return files, dest
     else:
         exit(0)
 
