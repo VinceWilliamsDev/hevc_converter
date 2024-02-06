@@ -19,8 +19,8 @@ def main(args: list[str]) -> None:
         for file in files:
             end_time = converter(file, dest)
         elapsed = time_elapsed(start_time, end_time)
-        print('File conversions are complete\n')
-        print(f'Time elapsed: {elapsed}')
+        print('File conversions are complete')
+        print(f'Time elapsed: {elapsed}\n')
     elif len(args) == 1:
         arg: Path = Path(args[0])
         if not arg.exists():
@@ -29,15 +29,15 @@ def main(args: list[str]) -> None:
             dest: Path = make_destination_dir(arg.parent)
             end_time = converter(arg, dest)
             elapsed = time_elapsed(start_time, end_time)
-            print('File conversions are complete\n')
-            print(f'Time elapsed: {elapsed}')
+            print('File conversions are complete')
+            print(f'Time elapsed: {elapsed}\n')
         elif arg.is_dir():
             files, dest = selector(arg)
             for file in files:
                 end_time = converter(file, dest)
             elapsed = time_elapsed(start_time, end_time)
-            print('File conversions are complete\n')
-            print(f'Time elapsed: {elapsed}')
+            print('File conversions are complete')
+            print(f'Time elapsed: {elapsed}\n')
         else:
             exit(0)
     elif len(args) > 1:
