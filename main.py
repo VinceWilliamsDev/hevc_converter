@@ -77,7 +77,7 @@ def converter(src: Path, dest: Path) -> None:
                 ['ffprobe', '-show_format', '-show_streams', '-loglevel', 'quiet', '-print_format', 'json', input_file],
                 stdout=subprocess.PIPE, check=True)
             video_info = json.loads(ffprobe.stdout.decode())
-            for stream in range(5):
+            for stream in range(len(video_info['streams'])):
                 if video_info['streams'][stream]['codec_name'] == 'hevc':
                     try:
                         move(input_file, dest)
