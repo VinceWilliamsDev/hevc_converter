@@ -4,7 +4,7 @@ from os import remove
 from sys import argv
 from pathlib import Path
 import subprocess
-from datetime import date, time
+from time import localtime, strftime
 from typing import Tuple, List
 
 
@@ -64,9 +64,9 @@ def converter(src: Path, dest: Path) -> None:
         input_file: str = src.name
         new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
-        flag: bool = False
-
-        print(f'\nSTARTING {input_file}\n')
+        error: bool = False
+        now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        print(f'\n{now}: STARTING {input_file}\n')
 
         try:
             result: subprocess.CompletedProcess = subprocess.run(
@@ -74,23 +74,23 @@ def converter(src: Path, dest: Path) -> None:
                 stdout=subprocess.PIPE, check=True)
             print(result.stdout.decode())
         except subprocess.CalledProcessError as e:
-            print(f'Command {e.cmd} failed with error {e.returncode}')
-            flag = True
+            now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
+            print(f'{now}: Command {e.cmd} failed with error {e.returncode}')
+            error = True
             with open(log_file, 'a') as log:
-                now = f'{date.today()} {time.hour}:{time.minute}'
                 log.write(f'[{now}] CONVERSION FAILED FOR ({input_file})\n')
             if output_file.exists():
                 remove(output_file)
-        if not flag:
+        if not error:
+            now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
             with open(log_file, 'a') as log:
-                now = f'{date.today()} {time.hour}:{time.minute}'
                 log.write(f'[{now}] successfully converted ({input_file})\n')
-        print(f'FINISHED {input_file}\n')
+        print(f'{now}: FINISHED {input_file}\n')
     else:
+        now: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
         with open(log_file, 'a') as log:
-            now = f'{date.today()} {time.hour}:{time.minute}'
             log.write(f'[{now}] CANNOT CONVERT ({src.name})\n')
-        print(f'\n{src.name} cannot be converted\n')
+        print(f'\n{now}: {src.name} cannot be converted\n')
 
 
 # Press the green button in the gutter to run the script.
