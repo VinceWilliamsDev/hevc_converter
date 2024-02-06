@@ -1,5 +1,6 @@
 # convert video files to the H.265 codec
-import os
+
+from os import remove
 from sys import argv
 from pathlib import Path
 import subprocess
@@ -58,18 +59,14 @@ def make_destination_dir(directory: Path) -> Path:
 
 
 def converter(src: Path, dest: Path) -> None:
+    log_file: Path = src.parent.joinpath('conversion.log')
     if src.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
         input_file: str = src.name
         new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
-        log_file: Path = src.parent.joinpath('conversion.log')
         flag: bool = False
 
         print(f'\nSTARTING {input_file}\n')
-
-        # print(f'input_file: {input_file}')
-        # print(f'new name: {new_name}')
-        # print(f'output_file: {output_file}')
 
         try:
             result: subprocess.CompletedProcess = subprocess.run(
@@ -81,15 +78,18 @@ def converter(src: Path, dest: Path) -> None:
             flag = True
             with open(log_file, 'a') as log:
                 now = f'{date.today()} {time.hour}:{time.minute}'
-                log.write(f'{now}: CONVERSION FAILED FOR ({input_file})\n')
+                log.write(f'[{now}] CONVERSION FAILED FOR ({input_file})\n')
             if output_file.exists():
-                os.remove(output_file)
+                remove(output_file)
         if not flag:
             with open(log_file, 'a') as log:
                 now = f'{date.today()} {time.hour}:{time.minute}'
-                log.write(f'{now}: successfully converted ({input_file})\n')
+                log.write(f'[{now}] successfully converted ({input_file})\n')
         print(f'FINISHED {input_file}\n')
     else:
+        with open(log_file, 'a') as log:
+            now = f'{date.today()} {time.hour}:{time.minute}'
+            log.write(f'[{now}] CANNOT CONVERT ({src.name})\n')
         print(f'\n{src.name} cannot be converted\n')
 
 
