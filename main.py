@@ -151,9 +151,10 @@ def converter(src: Path, dest: Path) -> str:
 
     else:
         end_time: str = strftime("%Y-%m-%d %H:%M:%S", localtime())
-        with open(log_file, 'a') as log:
-            log.write(f'[{end_time}] CANNOT CONVERT ({src.name})\n')
-        print(f'\n{end_time}: {src.name} cannot be converted\n')
+        if src.name not in [dest, log_file]:
+            with open(log_file, 'a') as log:
+                log.write(f'[{end_time}] CANNOT CONVERT ({src.name})\n')
+            print(f'\n{end_time}: {src.name} cannot be converted\n')
         return end_time
 
 
