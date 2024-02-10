@@ -74,11 +74,11 @@ def make_destination_dir(directory: Path) -> Path:
 def time_elapsed(start: datetime, end: datetime) -> str:
     diff = end - start
 
-    secs = diff.seconds % 60
-    mins = (diff.seconds // 60) % 60
-    hours = diff.seconds // (60 * 60)
+    secs: int = diff.seconds % 60
+    mins: int = (diff.seconds // 60) % 60
+    hours: int = diff.seconds // (60 * 60)
 
-    elapsed = f'{mins} minutes, {secs} seconds'
+    elapsed: str = f'{mins} minutes, {secs} seconds'
 
     if diff.days > 0:
         elapsed = f'{diff.days} days, {hours} hours, {elapsed}'
@@ -104,7 +104,7 @@ def converter(src: Path, dest: Path) -> datetime:
                 stdout=subprocess.PIPE, check=True)
             video_info = json.loads(ffprobe.stdout.decode())
             for stream in range(len(video_info['streams'])):
-                if video_info['streams'][stream]['codec_name'] == 'hevc':
+                if ('codec_name' in video_info['streams'][stream].keys()) and (video_info['streams'][stream]['codec_name'] == 'hevc'):
                     try:
                         move(input_file, dest)
                         end_time = datetime.now()
