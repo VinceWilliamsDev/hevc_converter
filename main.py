@@ -20,7 +20,7 @@ def main(args: list[str]) -> None:
         files, dest = selector(pwd)
         for file in files:
             end_time = converter(file, dest)
-        elapsed = time_elapsed(end_time, start_time)
+        elapsed = time_elapsed(start_time, end_time)
         print('File conversions are complete')
         print(f'Time elapsed: {elapsed}\n')
     elif len(args) == 1:
@@ -30,14 +30,14 @@ def main(args: list[str]) -> None:
         if arg.is_file():
             dest: Path = make_destination_dir(arg.parent)
             end_time = converter(arg, dest)
-            elapsed = time_elapsed(end_time, start_time)
+            elapsed = time_elapsed(start_time, end_time)
             print('File conversions are complete')
             print(f'Time elapsed: {elapsed}\n')
         elif arg.is_dir():
             files, dest = selector(arg)
             for file in files:
                 end_time = converter(file, dest)
-            elapsed = time_elapsed(end_time, start_time)
+            elapsed = time_elapsed(start_time, end_time)
             print('File conversions are complete')
             print(f'Time elapsed: {elapsed}\n')
         else:
