@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # convert video files to the H.265 codec
 
 from os import remove
@@ -69,12 +71,12 @@ def make_destination_dir(directory: Path) -> Path:
     return destination
 
 
-def time_elapsed(start, end):
+def time_elapsed(start: datetime, end: datetime) -> str:
     diff = end - start
 
     secs = diff.seconds % 60
     mins = (diff.seconds // 60) % 60
-    hours = (diff.seconds // (60 * 60)) % 24
+    hours = diff.seconds // (60 * 60)
 
     elapsed = f'{mins} minutes, {secs} seconds'
 
@@ -93,7 +95,7 @@ def converter(src: Path, dest: Path) -> datetime:
         output_file: Path = dest.joinpath(new_name)
         start_time = datetime.now()
 
-        print(f'\n[{start_time.date()} {start_time.hour}:{start_time.minute}:{start_time.second}]: STARTING {input_file}\n')
+        print(f'\n[{start_time.date()} {start_time.hour}:{start_time.minute}:{start_time.second}]: STARTING ({input_file})\n')
 
         # check if the file is already encoded in HEVC. If so, simply move it to the destination folder
         try:
@@ -108,17 +110,17 @@ def converter(src: Path, dest: Path) -> datetime:
                         end_time = datetime.now()
                         with open(log_file, 'a') as log:
                             log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] successfully moved ({input_file})\n')
-                        print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}]: FINISHED {input_file}\n')
+                        print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] FINISHED ({input_file})\n')
                         return end_time
                     except FileExistsError:
                         end_time = datetime.now()
                         with open(log_file, 'a') as log:
                             log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] FAILED TO MOVE ({src.name})\n')
-                        print(f'\n[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}]: {src.name} cannot be moved\n')
+                        print(f'\n[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] ({src.name}) cannot be moved\n')
                         return end_time
         except subprocess.CalledProcessError as e:
             end_time = datetime.now()
-            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}]: Command {e.cmd} failed with error {e.returncode}\nOutput: {e.output}')
+            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}\nOutput: {e.output}')
             return end_time
 
         # if it isn't already HEVC, re-encode
@@ -130,11 +132,11 @@ def converter(src: Path, dest: Path) -> datetime:
             end_time = datetime.now()
             with open(log_file, 'a') as log:
                 log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] successfully converted ({input_file})\n')
-            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}]: FINISHED {input_file}\n')
+            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] FINISHED ({input_file})\n')
             return end_time
         except subprocess.CalledProcessError as e:
             end_time = datetime.now()
-            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}]: Command {e.cmd} failed with error {e.returncode}')
+            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}')
             with open(log_file, 'a') as log:
                 log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] CONVERSION FAILED FOR ({input_file})\n')
             if output_file.exists():
@@ -146,7 +148,7 @@ def converter(src: Path, dest: Path) -> datetime:
         if src.name not in [dest.name, log_file.name]:
             with open(log_file, 'a') as log:
                 log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] CANNOT CONVERT ({src.name})\n')
-            print(f'\n[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}]: {src.name} cannot be converted\n')
+            print(f'\n[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] ({src.name}) cannot be converted\n')
         return end_time
 
 
