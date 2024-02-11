@@ -132,7 +132,9 @@ def converter(src: Path, dest: Path) -> datetime:
                         return end_time
         except subprocess.CalledProcessError as e:
             end_time = datetime.now()
-            log_event(end_time, src.parent, '', f'Command {e.cmd} failed with error {e.returncode}\nOutput: {e.output}')
+            log_event(end_time, src.parent, input_file, 'FFPROBE FAILED FOR')
+            print(
+                f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}')
             return end_time
 
         # if it isn't already HEVC, re-encode
