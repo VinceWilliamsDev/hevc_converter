@@ -87,8 +87,19 @@ def time_elapsed(start: datetime, end: datetime) -> str:
     return elapsed
 
 
+def log_event(timestamp: datetime, directory: Path, target: str, event_type: str) -> None:
+    log_file: Path = directory.joinpath('HEVC.log')
+    try:
+        with open(log_file, 'a') as log:
+            log.write(
+                f'[{timestamp.date()} {timestamp.hour}:{timestamp.minute}:{timestamp.second}] {event_type} ({target})\n')
+    except IOError:
+        print(f'Unable to write to {log_file}')
+    print(
+        f'[{timestamp.date()} {timestamp.hour}:{timestamp.minute}:{timestamp.second}] {event_type} ({target})\n')
+
+
 def converter(src: Path, dest: Path) -> datetime:
-    log_file: Path = src.parent.joinpath('HEVC.log')
     if src.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
         input_file: str = src.name
         new_name: str = f'{src.stem}.mp4'
@@ -97,6 +108,10 @@ def converter(src: Path, dest: Path) -> datetime:
 
         print(f'\n[{start_time.date()} {start_time.hour}:{start_time.minute}:{start_time.second}]: STARTING ({input_file})\n')
 
+        if output_file.exists():
+            end_time = datetime.now()
+            log_event(end_time, src.parent, input_file, 'DUPLICATE DETECTED')
+            return end_time
         # check if the file is already encoded in HEVC. If so, simply move it to the destination folder
         try:
             ffprobe: subprocess.CompletedProcess = subprocess.run(
@@ -108,19 +123,15 @@ def converter(src: Path, dest: Path) -> datetime:
                     try:
                         move(input_file, dest)
                         end_time = datetime.now()
-                        with open(log_file, 'a') as log:
-                            log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] successfully moved ({input_file})\n')
-                        print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] FINISHED ({input_file})\n')
+                        log_event(end_time, src.parent, input_file, 'successfully moved')
                         return end_time
                     except FileExistsError:
                         end_time = datetime.now()
-                        with open(log_file, 'a') as log:
-                            log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] FAILED TO MOVE ({src.name})\n')
-                        print(f'\n[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] ({src.name}) cannot be moved\n')
+                        log_event(end_time, src.parent, src.name, 'FAILED TO MOVE')
                         return end_time
         except subprocess.CalledProcessError as e:
             end_time = datetime.now()
-            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}\nOutput: {e.output}')
+            log_event(end_time, src.parent, '', f'Command {e.cmd} failed with error {e.returncode}\nOutput: {e.output}')
             return end_time
 
         # if it isn't already HEVC, re-encode
@@ -130,15 +141,12 @@ def converter(src: Path, dest: Path) -> datetime:
                 stdout=subprocess.PIPE, check=True)
             print(result.stdout.decode())
             end_time = datetime.now()
-            with open(log_file, 'a') as log:
-                log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] successfully converted ({input_file})\n')
-            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] FINISHED ({input_file})\n')
+            log_event(end_time, src.parent, input_file, 'successfully converted')
             return end_time
         except subprocess.CalledProcessError as e:
             end_time = datetime.now()
             print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}')
-            with open(log_file, 'a') as log:
-                log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] CONVERSION FAILED FOR ({input_file})\n')
+            log_event(end_time, src.parent, input_file, 'CONVERSION FAILED FOR')
             if output_file.exists():
                 remove(output_file)
             return end_time
@@ -146,9 +154,7 @@ def converter(src: Path, dest: Path) -> datetime:
     else:
         end_time = datetime.now()
         if src.name not in [dest.name, log_file.name]:
-            with open(log_file, 'a') as log:
-                log.write(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] CANNOT CONVERT ({src.name})\n')
-            print(f'\n[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] ({src.name}) cannot be converted\n')
+            log_event(end_time, src.parent, src.name, 'CANNOT CONVERT')
         return end_time
 
 
