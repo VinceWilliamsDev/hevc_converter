@@ -47,8 +47,6 @@ def main(args: list[str]) -> None:
 
     elif len(args) > 1:
         raise Exception('Please input only one(1) file or directory')
-    else:
-        exit(0)
 
 
 def selector(target: Path) -> tuple[list[Path], Path]:
