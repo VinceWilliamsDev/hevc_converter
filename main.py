@@ -89,14 +89,15 @@ def time_elapsed(start: datetime, end: datetime) -> str:
 
 def log_event(timestamp: datetime, directory: Path, target: str, event_type: str) -> None:
     log_file: Path = directory.joinpath('HEVC.log')
+    print(
+        f'[{timestamp.date()} {timestamp.hour}:{timestamp.minute}:{timestamp.second}] {event_type} ({target})\n')
     try:
         with open(log_file, 'a') as log:
             log.write(
                 f'[{timestamp.date()} {timestamp.hour}:{timestamp.minute}:{timestamp.second}] {event_type} ({target})\n')
     except IOError:
         print(f'Unable to write to {log_file}')
-    print(
-        f'[{timestamp.date()} {timestamp.hour}:{timestamp.minute}:{timestamp.second}] {event_type} ({target})\n')
+        exit(1)
 
 
 def converter(src: Path, dest: Path) -> datetime:
