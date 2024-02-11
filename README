@@ -1,4 +1,4 @@
-Script to encode video files with the H.256 (HEVC) codec.
+Script to encode video files with the H.265 (HEVC) codec.
 
 I prefer the .mp4 container so it's hardcoded to output the file to .mp4
 
@@ -10,3 +10,4 @@ If a directory is supplied, all video files in the directory will be converted
 
 EXTERNAL DEPENDENCY:
 ffmpeg
+python3
