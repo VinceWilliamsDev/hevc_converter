@@ -14,13 +14,13 @@ from shutil import move
 
 def main(args: list[str]) -> None:
     start_time: datetime = datetime.now()
-    end_time: datetime = datetime.now()
 
     if len(args) == 0:
         pwd: Path = Path.cwd()
         files, dest = selector(pwd)
         for file in files:
-            end_time = converter(file, dest)
+            converter(file, dest)
+        end_time = datetime.now()
         elapsed = time_elapsed(start_time, end_time)
         print('File conversions are complete')
         print(f'Time elapsed: {elapsed}\n')
@@ -32,7 +32,8 @@ def main(args: list[str]) -> None:
 
         if arg.is_file():
             dest: Path = make_destination_dir(arg.parent)
-            end_time = converter(arg, dest)
+            converter(arg, dest)
+            end_time = datetime.now()
             elapsed = time_elapsed(start_time, end_time)
             print('File conversions are complete')
             print(f'Time elapsed: {elapsed}\n')
@@ -40,7 +41,8 @@ def main(args: list[str]) -> None:
         elif arg.is_dir():
             files, dest = selector(arg)
             for file in files:
-                end_time = converter(file, dest)
+                converter(file, dest)
+            end_time = datetime.now()
             elapsed = time_elapsed(start_time, end_time)
             print('File conversions are complete')
             print(f'Time elapsed: {elapsed}\n')
@@ -105,67 +107,66 @@ def log_event(timestamp: datetime, directory: Path, target: str, event_type: str
         exit(1)
 
 
-def converter(src: Path, dest: Path) -> datetime:
+def converter(src: Path, dest: Path) -> None:
     if src.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
-        input_file: str = src.name
         new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
         start_time = datetime.now()
 
-        print(f'\n[{start_time.date()} {start_time.hour}:{start_time.minute}:{start_time.second}]: STARTING ({input_file})\n')
+        print(f'\n[{start_time.date()} {start_time.hour}:{start_time.minute}:{start_time.second}]: STARTING ({src.name})\n')
 
         if output_file.exists():
             end_time = datetime.now()
-            log_event(end_time, src.parent, input_file, 'DUPLICATE DETECTED')
-            return end_time
+            log_event(end_time, src.parent, src.name, 'DUPLICATE DETECTED')
+            return
         # check if the file is already encoded in HEVC. If so, simply move it to the destination folder
         try:
             ffprobe: subprocess.CompletedProcess = subprocess.run(
-                ['ffprobe', '-show_format', '-show_streams', '-loglevel', 'quiet', '-print_format', 'json', input_file],
+                ['ffprobe', '-show_format', '-show_streams', '-loglevel', 'quiet', '-print_format', 'json', src],
                 stdout=subprocess.PIPE, check=True)
             video_info = json.loads(ffprobe.stdout.decode())
             for stream in range(len(video_info['streams'])):
                 if ('codec_name' in video_info['streams'][stream].keys()) and (video_info['streams'][stream]['codec_name'] == 'hevc'):
                     try:
-                        move(input_file, dest)
+                        move(src, dest)
                         end_time = datetime.now()
-                        log_event(end_time, src.parent, input_file, 'successfully moved')
-                        return end_time
+                        log_event(end_time, src.parent, src.name, 'successfully moved')
+                        return
                     except FileExistsError:
                         end_time = datetime.now()
                         log_event(end_time, src.parent, src.name, 'FAILED TO MOVE')
-                        return end_time
+                        return
         except subprocess.CalledProcessError as e:
             end_time = datetime.now()
-            log_event(end_time, src.parent, input_file, 'FFPROBE FAILED FOR')
+            log_event(end_time, src.parent, src.name, 'FFPROBE FAILED FOR')
             print(
                 f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}')
-            return end_time
+            return
 
         # if it isn't already HEVC, re-encode
         try:
             result: subprocess.CompletedProcess = subprocess.run(
-                ['ffmpeg', '-i', input_file, '-metadata', 'title=', '-c:v', 'hevc', '-c:a', 'copy', output_file],
+                ['ffmpeg', '-i', src, '-c:v', 'hevc', '-c:a', 'copy', output_file],
                 stdout=subprocess.PIPE, check=True)
             print(result.stdout.decode())
 
             end_time = datetime.now()
-            log_event(end_time, src.parent, input_file, 'successfully converted')
-            return end_time
+            log_event(end_time, src.parent, src.name, 'successfully converted')
+            return
         except subprocess.CalledProcessError as e:
             end_time = datetime.now()
             print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}')
-            log_event(end_time, src.parent, input_file, 'CONVERSION FAILED FOR')
+            log_event(end_time, src.parent, src.name, 'CONVERSION FAILED FOR')
 
             if output_file.exists():
                 remove(output_file)
-            return end_time
+            return
 
     else:
         end_time = datetime.now()
         if src.name not in ['hevc', 'HEVC.log']:
             log_event(end_time, src.parent, src.name, 'CANNOT CONVERT')
-        return end_time
+        return
 
 
 if __name__ == '__main__':
