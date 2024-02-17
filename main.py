@@ -110,17 +110,21 @@ def log_event(timestamp: datetime, parent_directory: Path, target: str, event_ty
 
 
 def converter(src: Path, dest: Path, archive: Path) -> None:
-    if src.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']:
+    exists: bool = src.exists()
+    video: bool = src.suffix in ['.mp4', '.mkv', '.avi', '.mov', '.wmv']
+    if video and exists:
         new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
         start_time = datetime.now()
 
         print(f'\n[{start_time.date()} {start_time.hour}:{start_time.minute}:{start_time.second}]: STARTING ({src.name})\n')
 
+        # make sure an HEVC copy doesn't already exist
         if output_file.exists():
             end_time = datetime.now()
             log_event(end_time, src.parent, src.name, 'DUPLICATE DETECTED')
             return
+
         # check if the file is already encoded in HEVC. If so, simply move it to the destination folder
         try:
             ffprobe: subprocess.CompletedProcess = subprocess.run(
@@ -171,7 +175,9 @@ def converter(src: Path, dest: Path, archive: Path) -> None:
 
     else:
         end_time = datetime.now()
-        if src.name not in ['hevc', 'HEVC.log']:
+        if video and not exists:
+            log_event(end_time, src.parent, src.name, 'FILE MOVED OR DELETED BEFORE CONVERSION:')
+        if not src.name == 'HEVC.log':
             log_event(end_time, src.parent, src.name, 'CANNOT CONVERT')
         return
 
