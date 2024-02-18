@@ -12,7 +12,8 @@ import json
 from shutil import move
 
 
-def main(args: list[str]) -> None:
+def main() -> None:
+    args = argv[1:]
     start_time: datetime = datetime.now()
 
     if len(args) == 0:
@@ -110,7 +111,7 @@ def log_event(parent_directory: Path, target: str, event_type: str) -> None:
         exit(1)
 
 
-def now_str():
+def now_str() -> str:
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
@@ -183,4 +184,4 @@ def converter(src: Path, dest: Path, archive: Path) -> None:
 
 
 if __name__ == '__main__':
-    main(argv[1:])
+    main()
