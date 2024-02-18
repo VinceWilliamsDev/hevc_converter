@@ -94,19 +94,23 @@ def time_elapsed(start: datetime, end: datetime) -> str:
     return elapsed
 
 
-def log_event(timestamp: datetime, parent_directory: Path, target: str, event_type: str) -> None:
+def log_event(timestamp: str, parent_directory: Path, target: str, event_type: str) -> None:
     log_file: Path = parent_directory.joinpath('HEVC.log')
 
     print(
-        f'[{timestamp.date()} {timestamp.hour}:{timestamp.minute}:{timestamp.second}] {event_type} ({target})\n')
+        f'[{timestamp}] {event_type} ({target})\n')
 
     try:
         with open(log_file, 'a') as log:
             log.write(
-                f'[{timestamp.date()} {timestamp.hour}:{timestamp.minute}:{timestamp.second}] {event_type} ({target})\n')
+                f'[{timestamp}] {event_type} ({target})\n')
     except IOError:
         print(f'Unable to write to {log_file}')
         exit(1)
+
+
+def now_str():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 def converter(src: Path, dest: Path, archive: Path) -> None:
@@ -115,13 +119,13 @@ def converter(src: Path, dest: Path, archive: Path) -> None:
     if video and exists:
         new_name: str = f'{src.stem}.mp4'
         output_file: Path = dest.joinpath(new_name)
-        start_time = datetime.now()
+        start_time = now_str()
 
-        print(f'\n[{start_time.date()} {start_time.hour}:{start_time.minute}:{start_time.second}]: STARTING ({src.name})\n')
+        print(f'\n[{start_time}]: STARTING ({src.name})\n')
 
         # make sure an HEVC copy doesn't already exist
         if output_file.exists():
-            end_time = datetime.now()
+            end_time = now_str()
             log_event(end_time, src.parent, src.name, 'DUPLICATE DETECTED')
             return
 
@@ -132,21 +136,22 @@ def converter(src: Path, dest: Path, archive: Path) -> None:
                 stdout=subprocess.PIPE, check=True)
             video_info = json.loads(ffprobe.stdout.decode())
             for stream in range(len(video_info['streams'])):
-                if ('codec_name' in video_info['streams'][stream].keys()) and (video_info['streams'][stream]['codec_name'] == 'hevc'):
+                if ('codec_name' in video_info['streams'][stream].keys()) and (
+                        video_info['streams'][stream]['codec_name'] == 'hevc'):
                     try:
                         move(src, dest)
-                        end_time = datetime.now()
+                        end_time = now_str()
                         log_event(end_time, src.parent, src.name, 'successfully moved')
                         return
                     except FileExistsError:
-                        end_time = datetime.now()
+                        end_time = now_str()
                         log_event(end_time, src.parent, src.name, 'FAILED TO MOVE')
                         return
         except subprocess.CalledProcessError as e:
-            end_time = datetime.now()
+            end_time = now_str()
             log_event(end_time, src.parent, src.name, 'FFPROBE FAILED FOR')
             print(
-                f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}')
+                f'[{end_time}] Command {e.cmd} failed with error {e.returncode}')
             return
 
         # if it isn't already HEVC, re-encode, then put the original copy in the 'archive' directory
@@ -158,15 +163,15 @@ def converter(src: Path, dest: Path, archive: Path) -> None:
             try:
                 move(src, archive)
             except FileExistsError:
-                end_time = datetime.now()
+                end_time = now_str()
                 log_event(end_time, src.parent, src.name, 'FAILED TO ARCHIVE')
                 return
-            end_time = datetime.now()
+            end_time = now_str()
             log_event(end_time, src.parent, src.name, 'successfully converted')
             return
         except subprocess.CalledProcessError as e:
-            end_time = datetime.now()
-            print(f'[{end_time.date()} {end_time.hour}:{end_time.minute}:{end_time.second}] Command {e.cmd} failed with error {e.returncode}')
+            end_time = now_str()
+            print(f'[{end_time}] Command {e.cmd} failed with error {e.returncode}')
             log_event(end_time, src.parent, src.name, 'CONVERSION FAILED FOR')
 
             if output_file.exists():
@@ -174,7 +179,7 @@ def converter(src: Path, dest: Path, archive: Path) -> None:
             return
 
     else:
-        end_time = datetime.now()
+        end_time = now_str()
         if video and not exists:
             log_event(end_time, src.parent, src.name, 'FILE MOVED OR DELETED BEFORE CONVERSION:')
         if not src.name == 'HEVC.log':
